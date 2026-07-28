@@ -1,0 +1,1787 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light" />
+    <meta
+      name="description"
+      content="Magnetic Motion — lightweight magnetic pull, pointer parallax, and layered motion for static websites."
+    />
+    <title>Magnetic Motion — pointer interaction for static websites</title>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Manrope:wght@400;500;600;700&display=swap");
+
+      :root {
+        color: #ece8df;
+        background: #0c0d0d;
+        font-family: "Manrope", sans-serif;
+        font-synthesis: none;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        overflow-x: hidden;
+        background:
+          radial-gradient(circle at 85% 8%, #29312a 0, transparent 27rem),
+          #0c0d0d;
+      }
+
+      button,
+      select,
+      input {
+        font: inherit;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      .noise {
+        position: fixed;
+        z-index: 20;
+        inset: 0;
+        pointer-events: none;
+        opacity: 0.045;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 160 160' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='.8'/%3E%3C/svg%3E");
+      }
+
+      .shell {
+        width: min(1240px, calc(100% - 40px));
+        margin-inline: auto;
+      }
+
+      .nav {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 88px;
+        border-bottom: 1px solid #ffffff1a;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-weight: 600;
+        letter-spacing: -0.03em;
+      }
+
+      .brand-mark {
+        display: grid;
+        width: 28px;
+        height: 28px;
+        place-items: center;
+        border-radius: 50%;
+        background: #c8ff62;
+        color: #101210;
+        font-family: "DM Mono", monospace;
+        font-size: 11px;
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 30px;
+        color: #b8b9b5;
+        font-size: 14px;
+      }
+
+      .hero {
+        position: relative;
+        display: grid;
+        min-height: 710px;
+        align-items: center;
+        isolation: isolate;
+      }
+
+      .hero-copy {
+        position: relative;
+        z-index: 2;
+        max-width: 970px;
+        padding-block: 110px 140px;
+      }
+
+      .eyebrow,
+      .label,
+      .code-label {
+        font-family: "DM Mono", monospace;
+        font-size: 11px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .eyebrow {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: #c8ff62;
+      }
+
+      .eyebrow::before {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: currentColor;
+        box-shadow: 0 0 20px currentColor;
+        content: "";
+      }
+
+      h1 {
+        max-width: 930px;
+        margin: 26px 0 30px;
+        font-size: clamp(60px, 8.5vw, 126px);
+        font-weight: 500;
+        letter-spacing: -0.075em;
+        line-height: 0.84;
+      }
+
+      h1 span {
+        color: #747a73;
+      }
+
+      .hero-bottom {
+        display: flex;
+        align-items: center;
+        gap: 40px;
+      }
+
+      .hero-bottom p {
+        max-width: 390px;
+        margin: 0;
+        color: #a9aaa6;
+        font-size: 17px;
+        line-height: 1.55;
+      }
+
+      .magnetic-button {
+        display: inline-grid;
+        flex: 0 0 auto;
+        width: 138px;
+        height: 138px;
+        place-items: center;
+        border-radius: 50%;
+        background: #c8ff62;
+        color: #101210;
+        font-size: 14px;
+        font-weight: 700;
+        box-shadow: 0 22px 80px #c8ff6222;
+      }
+
+      .hero-orbit {
+        position: absolute;
+        z-index: -1;
+        top: 7%;
+        right: -12%;
+        width: min(52vw, 690px);
+        aspect-ratio: 1;
+        border: 1px solid #c8ff622c;
+        border-radius: 50%;
+      }
+
+      .hero-orbit::before,
+      .hero-orbit::after {
+        position: absolute;
+        border: 1px solid #ffffff10;
+        border-radius: inherit;
+        content: "";
+      }
+
+      .hero-orbit::before {
+        inset: 14%;
+      }
+
+      .hero-orbit::after {
+        inset: 31%;
+        background: radial-gradient(circle, #c8ff621e, transparent 66%);
+      }
+
+      .orb {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(2px);
+      }
+
+      .orb-a {
+        top: 19%;
+        right: 22%;
+        width: 17px;
+        height: 17px;
+        background: #c8ff62;
+        box-shadow: 0 0 45px #c8ff62;
+      }
+
+      .orb-b {
+        right: 7%;
+        bottom: 25%;
+        width: 82px;
+        height: 82px;
+        background: #535b54;
+      }
+
+      .section {
+        padding-block: 115px;
+        border-top: 1px solid #ffffff14;
+      }
+
+      .section-head {
+        display: grid;
+        grid-template-columns: 1fr 2fr;
+        gap: 32px;
+        margin-bottom: 54px;
+      }
+
+      .section-head h2 {
+        max-width: 680px;
+        margin: 0;
+        font-size: clamp(38px, 5vw, 72px);
+        font-weight: 500;
+        letter-spacing: -0.055em;
+        line-height: 1;
+      }
+
+      .label {
+        color: #888b86;
+      }
+
+      .cards {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+      }
+
+      .card {
+        position: relative;
+        min-height: 430px;
+        overflow: hidden;
+        border: 1px solid #ffffff14;
+        border-radius: 24px;
+        background: #141616;
+      }
+
+      .card-copy {
+        position: absolute;
+        z-index: 2;
+        right: 28px;
+        bottom: 28px;
+        left: 28px;
+      }
+
+      .card-copy strong {
+        display: block;
+        margin-bottom: 8px;
+        font-size: 23px;
+        font-weight: 500;
+        letter-spacing: -0.03em;
+      }
+
+      .card-copy span {
+        color: #8f928e;
+        font-size: 14px;
+      }
+
+      .card-art {
+        position: absolute;
+        inset: 0;
+      }
+
+      .card-art::before,
+      .card-art::after {
+        position: absolute;
+        content: "";
+      }
+
+      .art-pull::before {
+        top: 70px;
+        left: 50%;
+        width: 170px;
+        height: 170px;
+        border: 1px solid #c8ff6255;
+        border-radius: 50%;
+        background: radial-gradient(circle at 32% 32%, #dfff9d, #4c7023 48%, #182213);
+        box-shadow: 0 30px 90px #c8ff6224;
+        transform: translateX(-50%);
+      }
+
+      .art-pull::after {
+        top: 45px;
+        left: 50%;
+        width: 250px;
+        height: 250px;
+        border: 1px dashed #ffffff20;
+        border-radius: 50%;
+        transform: translateX(-50%);
+      }
+
+      .art-parallax {
+        background:
+          linear-gradient(130deg, transparent 42%, #c8ff6218 43%, transparent 44%),
+          repeating-linear-gradient(90deg, transparent 0 34px, #ffffff08 35px);
+      }
+
+      .art-parallax::before {
+        top: 88px;
+        left: 70px;
+        width: 170px;
+        height: 170px;
+        border-radius: 20px;
+        background: linear-gradient(145deg, #313631, #171917);
+        box-shadow: 40px 32px 0 #c8ff6223;
+        rotate: -9deg;
+      }
+
+      .art-layers::before {
+        top: 70px;
+        left: 50%;
+        width: 180px;
+        height: 180px;
+        border: 1px solid #ffffff20;
+        border-radius: 30px;
+        background: #202420;
+        transform: translateX(-50%) rotate(45deg);
+      }
+
+      .art-layers::after {
+        top: 115px;
+        left: 50%;
+        width: 90px;
+        height: 90px;
+        border-radius: 24px;
+        background: #c8ff62;
+        box-shadow: 0 0 80px #c8ff6244;
+        transform: translateX(-50%) rotate(45deg);
+      }
+
+      .lab {
+        display: grid;
+        grid-template-columns: minmax(0, 1.4fr) minmax(300px, 0.6fr);
+        overflow: hidden;
+        border: 1px solid #ffffff16;
+        border-radius: 28px;
+        background: #121414;
+      }
+
+      .lab-stage {
+        position: relative;
+        display: grid;
+        min-height: 560px;
+        overflow: hidden;
+        place-items: center;
+        background:
+          radial-gradient(circle at 50% 50%, #c8ff6212, transparent 33%),
+          linear-gradient(#ffffff07 1px, transparent 1px),
+          linear-gradient(90deg, #ffffff07 1px, transparent 1px);
+        background-size: auto, 42px 42px, 42px 42px;
+      }
+
+      .lab-stage::after {
+        position: absolute;
+        width: 310px;
+        height: 310px;
+        border: 1px dashed #c8ff6233;
+        border-radius: 50%;
+        content: "";
+      }
+
+      .lab-target {
+        position: relative;
+        z-index: 2;
+        display: grid;
+        width: 180px;
+        height: 180px;
+        place-items: center;
+        border: 0;
+        border-radius: 32px;
+        background: #c8ff62;
+        color: #101210;
+        cursor: pointer;
+        font-weight: 700;
+        box-shadow: 0 30px 100px #c8ff622d;
+      }
+
+      .controls {
+        padding: 34px;
+        border-left: 1px solid #ffffff14;
+      }
+
+      .controls h3 {
+        margin: 8px 0 34px;
+        font-size: 26px;
+        font-weight: 500;
+        letter-spacing: -0.04em;
+      }
+
+      .field {
+        display: grid;
+        gap: 12px;
+        margin-bottom: 24px;
+      }
+
+      .field-head {
+        display: flex;
+        justify-content: space-between;
+        color: #adafaa;
+        font-size: 13px;
+      }
+
+      .field output {
+        color: #c8ff62;
+        font-family: "DM Mono", monospace;
+      }
+
+      input[type="range"] {
+        width: 100%;
+        accent-color: #c8ff62;
+      }
+
+      select {
+        width: 100%;
+        padding: 13px 14px;
+        border: 1px solid #ffffff1c;
+        border-radius: 10px;
+        outline: 0;
+        background: #1b1e1b;
+        color: #ece8df;
+      }
+
+      .reset {
+        width: 100%;
+        margin-top: 8px;
+        padding: 13px;
+        border: 1px solid #ffffff20;
+        border-radius: 999px;
+        background: transparent;
+        color: #ece8df;
+        cursor: pointer;
+      }
+
+      .code {
+        margin-top: 24px;
+        padding: 22px;
+        overflow-x: auto;
+        border: 1px solid #ffffff14;
+        border-radius: 18px;
+        background: #080909;
+        color: #c7cac4;
+        font-family: "DM Mono", monospace;
+        font-size: 12px;
+        line-height: 1.8;
+      }
+
+      .code em {
+        color: #c8ff62;
+        font-style: normal;
+      }
+
+      footer {
+        display: flex;
+        justify-content: space-between;
+        padding-block: 46px;
+        border-top: 1px solid #ffffff14;
+        color: #777b76;
+        font-size: 13px;
+      }
+
+      [data-magnetic-active].magnetic-button,
+      [data-magnetic-active].lab-target {
+        background: #d8ff91;
+      }
+
+      @media (max-width: 900px) {
+        .nav-links {
+          display: none;
+        }
+
+        .hero {
+          min-height: auto;
+        }
+
+        .hero-copy {
+          padding-block: 90px;
+        }
+
+        .hero-bottom,
+        .section-head {
+          align-items: flex-start;
+          flex-direction: column;
+          grid-template-columns: 1fr;
+        }
+
+        .cards,
+        .lab {
+          grid-template-columns: 1fr;
+        }
+
+        .controls {
+          border-top: 1px solid #ffffff14;
+          border-left: 0;
+        }
+      }
+
+      @media (max-width: 560px) {
+        .shell {
+          width: min(100% - 24px, 1240px);
+        }
+
+        h1 {
+          font-size: 58px;
+        }
+
+        .hero-bottom {
+          display: flex;
+        }
+
+        .cards {
+          gap: 12px;
+        }
+
+        .section {
+          padding-block: 80px;
+        }
+      }
+
+      @media (prefers-reduced-motion: reduce) {
+        html {
+          scroll-behavior: auto;
+        }
+      }
+
+      /* Light documentation theme shared with the sibling library demos. */
+      :root {
+        color: #20242c;
+        background: #f7f8fa;
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", sans-serif;
+      }
+
+      body {
+        min-width: 320px;
+        min-height: 100vh;
+        overflow-x: hidden;
+        background:
+          radial-gradient(circle at 12% 8%, rgb(100 89 215 / 8%), transparent 29rem),
+          #f7f8fa;
+      }
+
+      .noise {
+        z-index: 50;
+        opacity: 0.018;
+      }
+
+      .page {
+        width: min(1240px, calc(100% - 40px));
+        margin: 0 auto;
+        padding: 28px 360px 72px 0;
+      }
+
+      .shell {
+        width: auto;
+        margin: 0;
+      }
+
+      .nav {
+        min-height: 0;
+        padding-bottom: 22px;
+        border-bottom: 1px solid #dfe3e8;
+      }
+
+      .brand {
+        gap: 0;
+        color: #20242c;
+        font: 720 15px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+        letter-spacing: -0.02em;
+      }
+
+      .brand-mark {
+        display: none;
+      }
+
+      .nav-links {
+        gap: 6px;
+        color: #4e5663;
+        font: 650 10px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+
+      .nav-links a {
+        display: inline-flex;
+        min-height: 30px;
+        align-items: center;
+        padding: 0 9px;
+        border: 1px solid #d8dde4;
+        border-radius: 6px;
+        background: #fff;
+      }
+
+      .nav-links a:hover {
+        border-color: #9e97e7;
+        color: #5146c7;
+      }
+
+      .hero {
+        min-height: 620px;
+      }
+
+      .hero-copy {
+        max-width: 760px;
+        padding-block: 88px 104px;
+      }
+
+      .eyebrow,
+      .label,
+      .code-label {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+
+      .eyebrow {
+        color: #6459d7;
+      }
+
+      .eyebrow::before {
+        background: #6459d7;
+        box-shadow: 0 0 16px rgb(100 89 215 / 38%);
+      }
+
+      h1 {
+        max-width: 760px;
+        color: #242832;
+        font-size: clamp(58px, 7vw, 96px);
+        font-weight: 560;
+        line-height: 0.9;
+      }
+
+      h1 span {
+        color: #8c93a0;
+      }
+
+      .hero-bottom p {
+        color: #697180;
+      }
+
+      .magnetic-button {
+        width: 128px;
+        height: 128px;
+        background: #6459d7;
+        color: #fff;
+        box-shadow: 0 22px 70px rgb(100 89 215 / 22%);
+      }
+
+      .hero-orbit {
+        top: 5%;
+        right: -25%;
+        width: min(50vw, 560px);
+        border-color: rgb(100 89 215 / 18%);
+      }
+
+      .hero-orbit::before,
+      .hero-orbit::after {
+        border-color: rgb(100 89 215 / 10%);
+      }
+
+      .hero-orbit::after {
+        background: radial-gradient(circle, rgb(100 89 215 / 10%), transparent 66%);
+      }
+
+      .orb-a {
+        background: #6459d7;
+        box-shadow: 0 0 38px rgb(100 89 215 / 48%);
+      }
+
+      .orb-b {
+        background: #d9d5f6;
+      }
+
+      .section {
+        padding-block: 82px;
+        border-top-color: #dfe3e8;
+      }
+
+      .section-head {
+        grid-template-columns: minmax(140px, 0.5fr) 2fr;
+        margin-bottom: 36px;
+      }
+
+      .section-head h2 {
+        color: #252a34;
+        font-size: clamp(36px, 4.2vw, 58px);
+        font-weight: 560;
+      }
+
+      .label {
+        color: #6b63c7;
+        font-size: 10px;
+        font-weight: 700;
+      }
+
+      .cards {
+        gap: 12px;
+      }
+
+      .card {
+        min-height: 350px;
+        border-color: #dfe3e8;
+        border-radius: 12px;
+        background: #fff;
+        box-shadow: 0 8px 22px rgb(35 44 58 / 5%);
+      }
+
+      .card-copy {
+        right: 22px;
+        bottom: 22px;
+        left: 22px;
+      }
+
+      .card-copy strong {
+        color: #252a34;
+        font-size: 20px;
+      }
+
+      .card-copy span {
+        color: #7c8491;
+      }
+
+      .art-pull::before {
+        top: 56px;
+        width: 140px;
+        height: 140px;
+        border-color: rgb(100 89 215 / 28%);
+        background: radial-gradient(circle at 32% 32%, #c9c4ff, #756adc 48%, #342d89);
+        box-shadow: 0 26px 68px rgb(100 89 215 / 22%);
+      }
+
+      .art-pull::after {
+        top: 34px;
+        width: 205px;
+        height: 205px;
+        border-color: #cdd1d8;
+      }
+
+      .art-parallax {
+        background:
+          linear-gradient(130deg, transparent 42%, rgb(100 89 215 / 10%) 43%, transparent 44%),
+          repeating-linear-gradient(90deg, transparent 0 34px, #20242c0a 35px);
+      }
+
+      .art-parallax::before {
+        top: 70px;
+        left: 58px;
+        width: 140px;
+        height: 140px;
+        background: linear-gradient(145deg, #eeeefa, #d8d6ee);
+        box-shadow: 34px 28px 0 rgb(100 89 215 / 15%);
+      }
+
+      .art-layers::before {
+        top: 55px;
+        width: 150px;
+        height: 150px;
+        border-color: #d9dce3;
+        background: #eef0f4;
+      }
+
+      .art-layers::after {
+        top: 92px;
+        width: 76px;
+        height: 76px;
+        background: #6459d7;
+        box-shadow: 0 0 58px rgb(100 89 215 / 28%);
+      }
+
+      .lab {
+        display: block;
+        overflow: hidden;
+        border: 1px solid #dfe3e8;
+        border-radius: 12px;
+        background: #fff;
+        box-shadow: 0 8px 22px rgb(35 44 58 / 5%);
+      }
+
+      .lab-stage {
+        min-height: 470px;
+        background:
+          radial-gradient(circle at 50% 50%, rgb(100 89 215 / 10%), transparent 34%),
+          linear-gradient(#59617010 1px, transparent 1px),
+          linear-gradient(90deg, #59617010 1px, transparent 1px),
+          #fafaff;
+        background-size: auto, 42px 42px, 42px 42px, auto;
+      }
+
+      .lab-stage::after {
+        border-color: rgb(100 89 215 / 30%);
+      }
+
+      .lab-target {
+        border-radius: 20px;
+        background: #6459d7;
+        color: #fff;
+        box-shadow: 0 28px 80px rgb(100 89 215 / 25%);
+      }
+
+      .configuration {
+        position: fixed;
+        z-index: 40;
+        top: 20px;
+        right: max(20px, calc((100vw - 1240px) / 2));
+        width: 320px;
+        max-height: calc(100vh - 40px);
+        overflow-y: auto;
+        border: 1px solid #d9dee5;
+        border-radius: 12px;
+        background: rgb(255 255 255 / 96%);
+        box-shadow: 0 12px 32px rgb(30 39 55 / 10%);
+        backdrop-filter: blur(12px);
+      }
+
+      .configuration-header {
+        position: sticky;
+        z-index: 1;
+        top: 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 14px 16px;
+        border-bottom: 1px solid #e4e7ec;
+        background: rgb(255 255 255 / 96%);
+      }
+
+      .configuration-title h3 {
+        margin: 4px 0 0;
+        color: #20242c;
+        font-size: 13px;
+        letter-spacing: -0.01em;
+      }
+
+      .configuration .code-label {
+        color: #969da8;
+        font-size: 8px;
+        font-weight: 700;
+      }
+
+      .controls {
+        padding: 14px 16px 16px;
+        border: 0;
+      }
+
+      .field {
+        gap: 9px;
+        margin-bottom: 18px;
+      }
+
+      .field-head {
+        color: #596170;
+        font-size: 11px;
+        font-weight: 650;
+      }
+
+      .field output {
+        color: #5146c7;
+        font: 700 10px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+
+      input[type="range"] {
+        height: 4px;
+        margin: 0;
+        accent-color: #6459d7;
+      }
+
+      select {
+        min-height: 36px;
+        padding: 0 10px;
+        border-color: #d7dce3;
+        border-radius: 7px;
+        background: #fff;
+        color: #4e5663;
+        font-size: 11px;
+      }
+
+      select:focus-visible {
+        outline: 2px solid rgb(100 89 215 / 25%);
+        outline-offset: 1px;
+      }
+
+      .reset {
+        width: auto;
+        min-height: 28px;
+        margin: 0;
+        padding: 0 9px;
+        border: 1px solid #d7dce3;
+        border-radius: 6px;
+        background: #fff;
+        color: #596170;
+        font-size: 11px;
+      }
+
+      .reset:hover {
+        border-color: #9e97e7;
+        color: #5146c7;
+      }
+
+      .code {
+        margin-top: 14px;
+        padding: 18px;
+        border-color: #dfe3e8;
+        border-radius: 10px;
+        background: #252a34;
+        color: #d7dbe2;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      }
+
+      .code em {
+        color: #aaa3ff;
+      }
+
+      .example-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .example-card {
+        position: relative;
+        min-height: 250px;
+        overflow: hidden;
+        border: 1px solid #dfe3e8;
+        border-radius: 12px;
+        background: #fff;
+        box-shadow: 0 8px 22px rgb(35 44 58 / 5%);
+      }
+
+      .example-grid.compact .example-card {
+        min-height: 210px;
+      }
+
+      .example-visual {
+        position: absolute;
+        inset: 0;
+        display: grid;
+        place-items: center;
+      }
+
+      .example-orbit {
+        position: absolute;
+        width: 150px;
+        height: 150px;
+        border: 1px dashed #c8cdd5;
+        border-radius: 50%;
+      }
+
+      .example-orbit::before {
+        position: absolute;
+        inset: 26px;
+        border: 1px solid #e1e4e9;
+        border-radius: inherit;
+        content: "";
+      }
+
+      .example-dot {
+        position: relative;
+        z-index: 2;
+        width: 72px;
+        height: 72px;
+        border-radius: 20px;
+        background: linear-gradient(145deg, #776ce1, #5146c7);
+        box-shadow: 0 18px 44px rgb(100 89 215 / 24%);
+      }
+
+      .example-copy {
+        position: absolute;
+        z-index: 3;
+        right: 18px;
+        bottom: 17px;
+        left: 18px;
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 12px;
+      }
+
+      .example-copy strong {
+        color: #252a34;
+        font-size: 14px;
+        font-weight: 680;
+      }
+
+      .example-copy span {
+        max-width: 120px;
+        color: #858c97;
+        font: 600 9px/1.4 ui-monospace, SFMono-Regular, Menlo, monospace;
+        text-align: right;
+        text-transform: uppercase;
+      }
+
+      .falloff-card .example-orbit {
+        width: 168px;
+        height: 168px;
+        border-color: rgb(100 89 215 / 28%);
+      }
+
+      .falloff-card .example-dot {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+      }
+
+      .axis-line {
+        position: absolute;
+        width: 160px;
+        height: 1px;
+        background: #d9dde4;
+      }
+
+      .axis-line.vertical {
+        width: 1px;
+        height: 130px;
+      }
+
+      .direction-card .example-dot {
+        width: 62px;
+        height: 62px;
+        border-radius: 16px;
+      }
+
+      .scale-rings {
+        position: absolute;
+        width: 126px;
+        height: 126px;
+        border: 1px solid #dfe3e8;
+        border-radius: 24px;
+      }
+
+      .scale-rings::before,
+      .scale-rings::after {
+        position: absolute;
+        border: 1px solid #ebe7fb;
+        border-radius: inherit;
+        content: "";
+      }
+
+      .scale-rings::before {
+        inset: 13px;
+      }
+
+      .scale-rings::after {
+        inset: 27px;
+      }
+
+      footer {
+        padding-block: 36px;
+        border-top-color: #dfe3e8;
+        color: #7c8491;
+        font-size: 11px;
+      }
+
+      [data-magnetic-active].magnetic-button,
+      [data-magnetic-active].lab-target {
+        background: #766be0;
+      }
+
+      .header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        padding-bottom: 22px;
+        border-bottom: 1px solid #dfe3e8;
+      }
+
+      .library-name {
+        font: 720 15px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+        letter-spacing: -0.02em;
+      }
+
+      .package-meta,
+      .header-details {
+        display: flex;
+        align-items: center;
+      }
+
+      .header-details {
+        gap: 8px;
+      }
+
+      .meta-item {
+        display: grid;
+        gap: 3px;
+        padding: 0 12px;
+        border-left: 1px solid #dfe3e8;
+      }
+
+      .meta-item:first-child {
+        border-left: 0;
+      }
+
+      .meta-label {
+        color: #8a919d;
+        font: 700 8px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+      }
+
+      .meta-value {
+        color: #4e5663;
+        font: 650 10px/1.2 ui-monospace, SFMono-Regular, Menlo, monospace;
+        white-space: nowrap;
+      }
+
+      .repository-link {
+        display: inline-flex;
+        min-height: 30px;
+        align-items: center;
+        gap: 6px;
+        padding: 0 9px;
+        border: 1px solid #d8dde4;
+        border-radius: 6px;
+        color: #4e5663;
+        background: #fff;
+        font: 650 10px/1 ui-monospace, SFMono-Regular, Menlo, monospace;
+        text-decoration: none;
+      }
+
+      .repository-link:hover {
+        border-color: #9e97e7;
+        color: #5146c7;
+      }
+
+      .repository-link:focus-visible {
+        outline: 2px solid rgb(100 89 215 / 30%);
+        outline-offset: 2px;
+      }
+
+      .repository-link svg {
+        width: 15px;
+        height: 15px;
+        fill: currentColor;
+      }
+
+      .hero {
+        min-height: 430px;
+      }
+
+      .hero-copy {
+        padding-block: 92px;
+      }
+
+      @media (max-width: 1040px) {
+        .page {
+          width: min(820px, calc(100% - 40px));
+          padding-right: 0;
+        }
+
+        .configuration {
+          position: static;
+          width: auto;
+          max-height: none;
+          margin: 28px 0 12px;
+        }
+
+        .hero-orbit {
+          right: -12%;
+        }
+      }
+
+      @media (max-width: 700px) {
+        .page {
+          width: min(100% - 28px, 820px);
+          padding-top: 20px;
+        }
+
+        .header {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .header-details {
+          align-items: flex-start;
+          flex-wrap: wrap;
+        }
+
+        .meta-item:first-child {
+          padding-left: 0;
+        }
+
+        .hero {
+          min-height: auto;
+        }
+
+        .hero-copy {
+          padding-block: 72px 82px;
+        }
+
+        .hero-bottom {
+          align-items: flex-start;
+          flex-direction: column;
+        }
+
+        .section-head,
+        .cards,
+        .example-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .section {
+          padding-block: 68px;
+        }
+
+        .card {
+          min-height: 330px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="noise"></div>
+
+    <div class="page">
+      <header class="header">
+        <span class="library-name">magnetic-motion</span>
+        <div class="header-details">
+          <div class="package-meta" aria-label="Package metadata">
+            <div class="meta-item">
+              <span class="meta-label">ESM</span>
+              <span class="meta-value">15.0 kB</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Gzip</span>
+              <span class="meta-value">4.4 kB</span>
+            </div>
+            <div class="meta-item">
+              <span class="meta-label">Dependencies</span>
+              <span class="meta-value">None</span>
+            </div>
+          </div>
+          <a
+            class="repository-link"
+            href="https://github.com/dmitry-conquer/magnetic-motion"
+            target="_blank"
+            rel="noreferrer"
+            aria-label="Documentation on GitHub"
+          >
+            <svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+              <path d="M8 0C3.58 0 0 3.64 0 8.13c0 3.59 2.29 6.63 5.47 7.7.4.08.55-.18.55-.39 0-.19-.01-.83-.01-1.51-2.01.38-2.53-.5-2.69-.96-.09-.23-.48-.96-.82-1.15-.28-.15-.68-.54-.01-.55.63-.01 1.08.59 1.23.83.72 1.23 1.87.88 2.33.67.07-.53.28-.88.51-1.08-1.78-.21-3.64-.91-3.64-4.02 0-.89.31-1.62.82-2.19-.08-.2-.36-1.04.08-2.16 0 0 .67-.22 2.2.84A7.43 7.43 0 0 1 8 3.95c.68 0 1.36.09 2 .27 1.53-1.06 2.2-.84 2.2-.84.44 1.12.16 1.96.08 2.16.51.57.82 1.3.82 2.19 0 3.12-1.87 3.81-3.65 4.02.29.25.54.74.54 1.5 0 1.08-.01 1.95-.01 2.22 0 .21.15.47.55.39A8.13 8.13 0 0 0 16 8.13C16 3.64 12.42 0 8 0Z"/>
+            </svg>
+            Docs
+          </a>
+        </div>
+      </header>
+
+      <aside class="configuration" aria-label="Live configuration">
+        <div class="configuration-header">
+          <div class="configuration-title">
+            <span class="code-label">Global options</span>
+            <h3>Interaction controls</h3>
+          </div>
+          <button class="reset" type="button" data-reset>Reset defaults</button>
+        </div>
+
+        <form class="controls" data-toolbar>
+          <label class="field">
+            <span class="field-head">
+              Maximum movement
+              <output data-output="max">20px</output>
+            </span>
+            <input name="max" type="range" min="4" max="48" value="20" />
+          </label>
+
+          <label class="field">
+            <span class="field-head">
+              Pull radius
+              <output data-output="radius">100px</output>
+            </span>
+            <input name="radius" type="range" min="20" max="220" value="100" />
+          </label>
+
+          <label class="field">
+            <span class="field-head">
+              Strength
+              <output data-output="strength">1×</output>
+            </span>
+            <input name="strength" type="range" min="0.25" max="2" step="0.05" value="1" />
+          </label>
+
+          <label class="field">
+            <span class="field-head">Spring feel</span>
+            <select name="feel">
+              <option value="smooth">Smooth</option>
+              <option value="snappy">Snappy</option>
+              <option value="elastic">Elastic</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span class="field-head">Falloff</span>
+            <select name="falloff">
+              <option value="smooth">Smooth</option>
+              <option value="linear">Linear</option>
+              <option value="exponential">Exponential</option>
+            </select>
+          </label>
+
+          <label class="field">
+            <span class="field-head">Axis</span>
+            <select name="axis">
+              <option value="both">Both</option>
+              <option value="x">Horizontal</option>
+              <option value="y">Vertical</option>
+            </select>
+          </label>
+        </form>
+      </aside>
+
+      <main>
+      <section
+        class="shell hero"
+        data-magnetic="parallax"
+        data-magnetic-target="layers"
+        data-magnetic-max="18"
+      >
+        <div
+          class="hero-orbit"
+          data-magnetic-layer="-0.3"
+          data-magnetic-layer-scale="0.94"
+        ></div>
+        <span
+          class="orb orb-a"
+          data-magnetic-layer="1.4"
+          data-magnetic-layer-scale="1.18"
+        ></span>
+        <span
+          class="orb orb-b"
+          data-magnetic-layer="-0.7"
+          data-magnetic-layer-scale="0.86"
+        ></span>
+
+        <div class="hero-copy">
+          <div
+            class="hero-bottom"
+            data-magnetic-layer="0.7"
+            data-magnetic-layer-scale="1.025"
+          >
+            <a
+              class="magnetic-button"
+              href="#playground"
+              data-magnetic="pull"
+              data-magnetic-radius="150"
+              data-magnetic-max="28"
+              data-magnetic-feel="elastic"
+              data-magnetic-scale="1.04"
+            >
+              Try the pull
+            </a>
+            <p>
+              Magnetic attraction, pointer parallax, and independent depth
+              layers. One constructor, then plain HTML attributes.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="shell section" id="modes">
+        <div class="section-head">
+          <span class="label">01 / Three primitives</span>
+          <h2>A small API with enough range for an entire site.</h2>
+        </div>
+
+        <div class="cards">
+          <article
+            class="card"
+            data-magnetic="pull"
+            data-magnetic-target="both"
+            data-magnetic-radius="90"
+            data-magnetic-max="12"
+            data-magnetic-rotate="2"
+          >
+            <div
+              class="card-art art-pull"
+              data-magnetic-layer="-0.45"
+              data-magnetic-layer-scale="0.92"
+            ></div>
+            <div
+              class="card-copy"
+              data-magnetic-layer="0.8"
+              data-magnetic-layer-scale="1.06"
+            >
+              <strong>Pull</strong>
+              <span>Attraction begins before hover</span>
+            </div>
+          </article>
+
+          <article
+            class="card"
+            data-magnetic="parallax"
+            data-magnetic-target="both"
+            data-magnetic-max="12"
+            data-magnetic-reverse
+            data-magnetic-rotate="-2"
+          >
+            <div
+              class="card-art art-parallax"
+              data-magnetic-layer="-0.5"
+              data-magnetic-layer-scale="0.93"
+            ></div>
+            <div
+              class="card-copy"
+              data-magnetic-layer="0.9"
+              data-magnetic-layer-scale="1.07"
+            >
+              <strong>Parallax</strong>
+              <span>Normalized movement inside a surface</span>
+            </div>
+          </article>
+
+          <article
+            class="card"
+            data-magnetic="parallax"
+            data-magnetic-target="layers"
+            data-magnetic-max="20"
+          >
+            <div
+              class="card-art art-layers"
+              data-magnetic-layer="-0.35"
+              data-magnetic-layer-scale="0.9"
+            ></div>
+            <div
+              class="card-copy"
+              data-magnetic-layer="0.75"
+              data-magnetic-layer-scale="1.08"
+            >
+              <strong>Layers</strong>
+              <span>Signed multipliers create depth</span>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="shell section" id="spring-feel">
+        <div class="section-head">
+          <span class="label">02 / Spring feel</span>
+          <h2>Choose how softly or quickly each element follows its target.</h2>
+        </div>
+
+        <div class="example-grid">
+          <article
+            class="example-card"
+            data-magnetic="pull"
+            data-magnetic-target="layers"
+            data-magnetic-radius="120"
+            data-magnetic-max="22"
+            data-magnetic-feel="smooth"
+          >
+            <div class="example-visual" data-magnetic-layer="-0.2">
+              <div class="example-orbit"></div>
+            </div>
+            <div
+              class="example-dot"
+              data-magnetic-layer="1"
+              data-magnetic-layer-scale="1.12"
+              style="position: absolute; top: 72px; left: calc(50% - 36px)"
+            ></div>
+            <div class="example-copy" data-magnetic-layer="0.35">
+              <strong>Smooth</strong>
+              <span>Balanced and soft</span>
+            </div>
+          </article>
+
+          <article
+            class="example-card"
+            data-magnetic="pull"
+            data-magnetic-target="layers"
+            data-magnetic-radius="120"
+            data-magnetic-max="22"
+            data-magnetic-feel="snappy"
+          >
+            <div class="example-visual" data-magnetic-layer="-0.2">
+              <div class="example-orbit"></div>
+            </div>
+            <div
+              class="example-dot"
+              data-magnetic-layer="1"
+              data-magnetic-layer-scale="1.12"
+              style="position: absolute; top: 72px; left: calc(50% - 36px)"
+            ></div>
+            <div class="example-copy" data-magnetic-layer="0.35">
+              <strong>Snappy</strong>
+              <span>Fast and precise</span>
+            </div>
+          </article>
+
+          <article
+            class="example-card"
+            data-magnetic="pull"
+            data-magnetic-target="layers"
+            data-magnetic-radius="120"
+            data-magnetic-max="22"
+            data-magnetic-feel="elastic"
+          >
+            <div class="example-visual" data-magnetic-layer="-0.2">
+              <div class="example-orbit"></div>
+            </div>
+            <div
+              class="example-dot"
+              data-magnetic-layer="1"
+              data-magnetic-layer-scale="1.12"
+              style="position: absolute; top: 72px; left: calc(50% - 36px)"
+            ></div>
+            <div class="example-copy" data-magnetic-layer="0.35">
+              <strong>Elastic</strong>
+              <span>Springy overshoot</span>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="shell section" id="falloff">
+        <div class="section-head">
+          <span class="label">03 / Falloff</span>
+          <h2>Control how magnetic pull grows as the pointer gets closer.</h2>
+        </div>
+
+        <div class="example-grid">
+          <article
+            class="example-card falloff-card"
+            data-magnetic="pull"
+            data-magnetic-target="layers"
+            data-magnetic-radius="150"
+            data-magnetic-max="26"
+            data-magnetic-falloff="linear"
+          >
+            <div class="example-visual" data-magnetic-layer="-0.15">
+              <div class="example-orbit"></div>
+            </div>
+            <div
+              class="example-dot"
+              data-magnetic-layer="1"
+              data-magnetic-layer-scale="1.1"
+              style="position: absolute; top: 81px; left: calc(50% - 28px)"
+            ></div>
+            <div class="example-copy" data-magnetic-layer="0.35">
+              <strong>Linear</strong>
+              <span>Even strength curve</span>
+            </div>
+          </article>
+
+          <article
+            class="example-card falloff-card"
+            data-magnetic="pull"
+            data-magnetic-target="layers"
+            data-magnetic-radius="150"
+            data-magnetic-max="26"
+            data-magnetic-falloff="smooth"
+          >
+            <div class="example-visual" data-magnetic-layer="-0.15">
+              <div class="example-orbit"></div>
+            </div>
+            <div
+              class="example-dot"
+              data-magnetic-layer="1"
+              data-magnetic-layer-scale="1.1"
+              style="position: absolute; top: 81px; left: calc(50% - 28px)"
+            ></div>
+            <div class="example-copy" data-magnetic-layer="0.35">
+              <strong>Smooth</strong>
+              <span>Soft field edges</span>
+            </div>
+          </article>
+
+          <article
+            class="example-card falloff-card"
+            data-magnetic="pull"
+            data-magnetic-target="layers"
+            data-magnetic-radius="150"
+            data-magnetic-max="26"
+            data-magnetic-falloff="exponential"
+          >
+            <div class="example-visual" data-magnetic-layer="-0.15">
+              <div class="example-orbit"></div>
+            </div>
+            <div
+              class="example-dot"
+              data-magnetic-layer="1"
+              data-magnetic-layer-scale="1.1"
+              style="position: absolute; top: 81px; left: calc(50% - 28px)"
+            ></div>
+            <div class="example-copy" data-magnetic-layer="0.35">
+              <strong>Exponential</strong>
+              <span>Strong only up close</span>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="shell section" id="direction-depth">
+        <div class="section-head">
+          <span class="label">04 / Direction + depth</span>
+          <h2>Constrain an axis, reverse direction, or move through visual depth.</h2>
+        </div>
+
+        <div class="example-grid compact">
+          <article
+            class="example-card direction-card"
+            data-magnetic="parallax"
+            data-magnetic-target="layers"
+            data-magnetic-axis="x"
+            data-magnetic-max="34"
+          >
+            <div class="example-visual" data-magnetic-layer="-0.1">
+              <div class="axis-line"></div>
+            </div>
+            <div
+              class="example-dot"
+              data-magnetic-layer="1"
+              style="position: absolute; top: 61px; left: calc(50% - 31px)"
+            ></div>
+            <div class="example-copy">
+              <strong>X axis</strong>
+              <span>Horizontal only</span>
+            </div>
+          </article>
+
+          <article
+            class="example-card direction-card"
+            data-magnetic="parallax"
+            data-magnetic-target="layers"
+            data-magnetic-axis="y"
+            data-magnetic-max="28"
+          >
+            <div class="example-visual" data-magnetic-layer="-0.1">
+              <div class="axis-line vertical"></div>
+            </div>
+            <div
+              class="example-dot"
+              data-magnetic-layer="1"
+              style="position: absolute; top: 61px; left: calc(50% - 31px)"
+            ></div>
+            <div class="example-copy">
+              <strong>Y axis</strong>
+              <span>Vertical only</span>
+            </div>
+          </article>
+
+          <article
+            class="example-card direction-card"
+            data-magnetic="parallax"
+            data-magnetic-target="both"
+            data-magnetic-reverse
+            data-magnetic-max="14"
+          >
+            <div class="example-visual" data-magnetic-layer="-0.35">
+              <div class="example-orbit"></div>
+            </div>
+            <div
+              class="example-dot"
+              data-magnetic-layer="0.8"
+              data-magnetic-layer-scale="1.06"
+              style="position: absolute; top: 61px; left: calc(50% - 31px)"
+            ></div>
+            <div class="example-copy" data-magnetic-layer="0.3">
+              <strong>Reverse + both</strong>
+              <span>Host and layers</span>
+            </div>
+          </article>
+
+          <article
+            class="example-card direction-card"
+            data-magnetic="parallax"
+            data-magnetic-target="layers"
+            data-magnetic-max="12"
+          >
+            <div class="example-visual" data-magnetic-layer="-0.2">
+              <div class="scale-rings"></div>
+            </div>
+            <div
+              class="example-dot"
+              data-magnetic-layer="0.45"
+              data-magnetic-layer-scale="1.16"
+              style="position: absolute; top: 61px; left: calc(50% - 31px)"
+            ></div>
+            <div class="example-copy">
+              <strong>Scale up</strong>
+              <span>Moves forward</span>
+            </div>
+          </article>
+
+          <article
+            class="example-card direction-card"
+            data-magnetic="parallax"
+            data-magnetic-target="layers"
+            data-magnetic-max="12"
+          >
+            <div class="example-visual" data-magnetic-layer="0.2">
+              <div class="scale-rings"></div>
+            </div>
+            <div
+              class="example-dot"
+              data-magnetic-layer="-0.45"
+              data-magnetic-layer-scale="0.78"
+              style="position: absolute; top: 61px; left: calc(50% - 31px)"
+            ></div>
+            <div class="example-copy">
+              <strong>Scale down</strong>
+              <span>Falls backward</span>
+            </div>
+          </article>
+
+          <article
+            class="example-card direction-card"
+            data-magnetic="pull"
+            data-magnetic-target
+            data-magnetic-radius="130"
+            data-magnetic-max="24"
+            data-magnetic-scale="1.08"
+            data-magnetic-rotate="4"
+          >
+            <div class="example-visual">
+              <div class="example-orbit"></div>
+            </div>
+            <div
+              class="example-dot"
+              style="position: absolute; top: 61px; left: calc(50% - 31px)"
+            ></div>
+            <div class="example-copy">
+              <strong>Self shorthand</strong>
+              <span>Empty target attr</span>
+            </div>
+          </article>
+        </div>
+      </section>
+
+      <section class="shell section" id="playground">
+        <div class="section-head">
+          <span class="label">05 / Live playground</span>
+          <h2>Tune the shared defaults. Keep exceptions in markup.</h2>
+        </div>
+
+        <div class="lab">
+          <div class="lab-stage">
+            <button
+              class="lab-target"
+              type="button"
+              data-magnetic="pull"
+              data-magnetic-scale="1.035"
+              data-magnetic-rotate="3"
+            >
+              Come closer
+            </button>
+          </div>
+        </div>
+
+        <div class="code" aria-label="Installation example">
+          <em>import</em> MagneticMotion <em>from</em> "magnetic-motion";<br />
+          <br />
+          <em>const</em> magnetic = <em>new</em> MagneticMotion();
+        </div>
+      </section>
+      </main>
+    </div>
+
+    <script type="module" src="./main.ts"></script>
+  </body>
+</html>

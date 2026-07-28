@@ -1,0 +1,64 @@
+{
+  "name": "magnetic-motion",
+  "version": "0.1.0",
+  "description": "Lightweight magnetic pull, pointer parallax, and layered motion for static websites.",
+  "keywords": [
+    "magnetic",
+    "cursor",
+    "pointer",
+    "parallax",
+    "hover",
+    "spring",
+    "vanilla-javascript",
+    "typescript"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dmitry-conquer/magnetic-motion.git"
+  },
+  "homepage": "https://github.com/dmitry-conquer/magnetic-motion#readme",
+  "bugs": {
+    "url": "https://github.com/dmitry-conquer/magnetic-motion/issues"
+  },
+  "type": "module",
+  "sideEffects": false,
+  "packageManager": "pnpm@11.10.0",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "files": [
+    "dist"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "scripts": {
+    "dev": "vite --config vite.docs.config.ts --open",
+    "build": "tsup src/index.ts --format esm,cjs --clean --minify && tsc -p tsconfig.build.json",
+    "build:docs": "vite build --config vite.docs.config.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check": "pnpm run typecheck && pnpm test && pnpm run build && pnpm run build:docs",
+    "prepack": "pnpm run build",
+    "prepublishOnly": "pnpm run typecheck && pnpm test"
+  },
+  "devDependencies": {
+    "happy-dom": "^20.11.0",
+    "tsup": "^8.5.1",
+    "typescript": "^7.0.2",
+    "vite": "^8.1.5",
+    "vitest": "^4.1.10"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
