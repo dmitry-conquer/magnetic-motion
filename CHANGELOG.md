@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.1 - 2026-07-30
+
+### Changed
+
+- Added the missing Yarn installation command and a browser-ready CDN example
+  to the README.
+
 ## 0.1.0 - 2026-07-28
 
 ### Added

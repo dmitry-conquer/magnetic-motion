@@ -20,6 +20,20 @@ npm install magnetic-motion
 pnpm add magnetic-motion
 ```
 
+```bash
+yarn add magnetic-motion
+```
+
+### CDN
+
+```html
+<script type="module">
+  import MagneticMotion from "https://cdn.jsdelivr.net/npm/magnetic-motion/dist/index.js";
+
+  const magnetic = new MagneticMotion();
+</script>
+```
+
 ## Quick start
 
 Mark an element and initialize the page once:

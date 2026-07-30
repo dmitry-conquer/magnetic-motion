@@ -1,6 +1,6 @@
 {
   "name": "magnetic-motion",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Lightweight magnetic pull, pointer parallax, and layered motion for static websites.",
   "keywords": [
     "magnetic",
