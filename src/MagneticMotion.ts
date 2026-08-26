@@ -160,7 +160,6 @@ interface MagneticItem {
   element: HTMLElement;
   options: NormalizedOptions;
   actors: Actor[];
-  rect: DOMRect | null;
   x: MotionValue;
   y: MotionValue;
   influence: MotionValue;
@@ -239,8 +238,6 @@ export default class MagneticMotion {
   private pointerY = 0;
   private pointerType = "mouse";
   private hasPointer = false;
-  private scrollX = 0;
-  private scrollY = 0;
 
   constructor();
   constructor(options: MagneticMotionOptions);
@@ -263,8 +260,6 @@ export default class MagneticMotion {
       this.options = this.normalize(targetOrOptions);
     }
 
-    this.scrollX = this.window.scrollX;
-    this.scrollY = this.window.scrollY;
     this.items = this.collectItems();
     if (this.options.autoStart) this.start();
   }
@@ -449,7 +444,6 @@ export default class MagneticMotion {
   };
 
   private readonly handleResize = (): void => {
-    for (const item of this.items) item.rect = null;
     if (this.hasPointer) {
       for (const item of this.items) {
         this.updateItemTarget(item, this.pointerType);
@@ -458,20 +452,6 @@ export default class MagneticMotion {
   };
 
   private readonly handleScroll = (): void => {
-    const deltaX = this.window.scrollX - this.scrollX;
-    const deltaY = this.window.scrollY - this.scrollY;
-    this.scrollX = this.window.scrollX;
-    this.scrollY = this.window.scrollY;
-
-    for (const item of this.items) {
-      if (!item.rect) continue;
-      item.rect = DOMRect.fromRect({
-        x: item.rect.left - deltaX,
-        y: item.rect.top - deltaY,
-        width: item.rect.width,
-        height: item.rect.height,
-      });
-    }
     if (this.hasPointer) {
       for (const item of this.items) {
         this.updateItemTarget(item, this.pointerType);
@@ -508,7 +488,6 @@ export default class MagneticMotion {
         element,
         options: itemOptions,
         actors: [],
-        rect: null,
         x: movement(),
         y: movement(),
         influence: movement(),
@@ -550,7 +529,6 @@ export default class MagneticMotion {
         const changed = new Set(entries.map(entry => entry.target));
         for (const item of this.items) {
           if (!changed.has(item.element)) continue;
-          item.rect = null;
           if (this.hasPointer) {
             this.updateItemTarget(item, this.pointerType);
           }
@@ -568,7 +546,6 @@ export default class MagneticMotion {
       item.element.setAttribute(MOUNTED_ATTRIBUTE, "");
       item.element.removeAttribute(ACTIVE_ATTRIBUTE);
       item.element.removeAttribute(POINTER_ATTRIBUTE);
-      item.rect = item.element.getBoundingClientRect();
       this.resizeObserver?.observe(item.element);
       this.applyActorBaseStyles(item);
       this.renderItem(item);
@@ -598,7 +575,6 @@ export default class MagneticMotion {
         POINTER_ATTRIBUTE,
         item.pointerAttribute,
       );
-      item.rect = null;
       item.active = false;
       for (const value of [item.x, item.y, item.influence]) {
         value.current = 0;
@@ -672,8 +648,10 @@ export default class MagneticMotion {
   }
 
   private updateItemTarget(item: MagneticItem, pointerType: string): void {
-    const rect = item.rect ?? item.element.getBoundingClientRect();
-    item.rect = rect;
+    // A target can move when unrelated asynchronous content changes the layout
+    // above it, without changing the target's own dimensions. Always measure
+    // immediately before calculating the interaction field.
+    const rect = item.element.getBoundingClientRect();
     if (rect.width <= 0 || rect.height <= 0) {
       this.deactivate(item);
       return;

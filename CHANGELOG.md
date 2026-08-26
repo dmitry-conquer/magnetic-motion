@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## 0.1.2 - 2026-08-26
+
+### Fixed
+
+- Recalculate magnetic target bounds after asynchronous layout shifts, keeping
+  pointer activation aligned when third-party widgets or other content above a
+  target changes height.
+
 ## 0.1.1 - 2026-07-30
 
 ### Changed

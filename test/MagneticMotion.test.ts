@@ -250,6 +250,29 @@ describe("MagneticMotion", () => {
     );
   });
 
+  it("uses the current position after an unrelated layout shift", () => {
+    let box = rect(0, 100);
+    const target = makeTarget("", box);
+    target.setAttribute("data-magnetic", "parallax");
+    vi.spyOn(target, "getBoundingClientRect").mockImplementation(() => box);
+    const magnetic = new MagneticMotion(target, { spring: false });
+    instances.push(magnetic);
+
+    movePointer(100, 150);
+    expect(target.style.getPropertyValue("--magnetic-progress-y")).toBe(
+      "0.00000",
+    );
+
+    // An asynchronously rendered widget above the target moves it down without
+    // changing the target's dimensions, so its ResizeObserver would not fire.
+    box = rect(0, 400);
+    movePointer(100, 450);
+
+    expect(target.style.getPropertyValue("--magnetic-progress-y")).toBe(
+      "0.00000",
+    );
+  });
+
   it("runs parallax only inside its surface", () => {
     const target = makeTarget();
     target.setAttribute("data-magnetic", "parallax");
